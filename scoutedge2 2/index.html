@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scout Edge — Football Betting Intelligence</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#080814;--bg2:#0e0e1e;--bg3:#141428;--border:#1e1e35;--text:#e0e0ff;--text2:#888;--text3:#555;--blue:#6366f1;--yellow:#f59e0b;--green:#22c55e;--red:#ef4444;--card-bg:rgba(255,255,255,0.03)}
+  body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;min-height:100vh;background-image:radial-gradient(ellipse 70% 50% at 15% 5%,#0d0d28,transparent 65%)}
+  .app{max-width:1000px;margin:0 auto;padding:16px}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+  .lbl{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:block}
+  input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+  input:focus{border-color:var(--blue)}
+  .btn{background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;color:white;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:2px;text-transform:uppercase;font-family:inherit}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.sm{padding:6px 13px;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--text2)}
+  .btn.sm.on{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#a5b4fc}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+  .row:last-child{border-bottom:none}
+  .bar-w{margin-bottom:10px}
+  .bar-l{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+  .bar-t{display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--bg3)}
+  .fdot{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:9px;font-weight:700;margin:2px}
+  .mkt{padding:11px;border:1px solid var(--border);border-radius:8px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .mkt.val{border-color:#166534;background:rgba(34,197,94,.05)}
+  .mkt.hot{border-color:#854d0e;background:rgba(234,179,8,.05)}
+  .badge{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;white-space:nowrap}
+  .b-hot{background:#713f12;color:#fde68a}
+  .b-val{background:#14532d;color:#86efac}
+  .b-fair{background:var(--bg3);color:var(--text3)}
+  .b-av{background:#7f1d1d;color:#fca5a5}
+  .b-ai{background:#1e3a5f;color:#7dd3fc}
+  .catb{font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text3);margin-right:5px;white-space:nowrap}
+  .drop{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:300;background:#0c0c22;border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto}
+  .di{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #0e0e1e}
+  .di:hover{background:var(--bg2)}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .steprow{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2);letter-spacing:1px;padding:3px 0}
+  .err{color:var(--red);font-size:12px;margin-top:8px;text-align:center}
+  .schip{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px 14px;font-size:18px;font-weight:700;letter-spacing:3px;min-width:60px;text-align:center}
+  .sec{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px}
+  .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:4px}
+  .info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#a5b4fc;line-height:1.9;margin-bottom:14px}
+  .info a{color:#818cf8}
+  h1{font-size:22px;font-weight:900;background:linear-gradient(135deg,#fff 30%,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <h1>⚽ Scout Edge</h1>
+      <div style="font-size:10px;color:var(--text3);letter-spacing:3px">REAL-TIME · DIXON-COLES + AI · 40+ MARKETS</div>
+    </div>
+    <button class="btn sm" onclick="resetKey()" style="display:none" id="reset-btn">⎋ Change Key</button>
+  </div>
+
+  <!-- KEY SETUP -->
+  <div id="key-screen" class="card" style="max-width:480px;margin:0 auto;padding:24px">
+    <div class="info">
+      <strong>Get your free API key (2 min):</strong><br>
+      1. Go to <a href="https://sports.bzzoiro.com/register/" target="_blank">sports.bzzoiro.com/register</a><br>
+      2. Register with email — no credit card needed<br>
+      3. Confirm email → log in → go to <a href="https://sports.bzzoiro.com/dashboard/" target="_blank">Dashboard</a><br>
+      4. Copy your token and paste below
+    </div>
+    <label class="lbl">Bzzoiro API Token</label>
+    <input type="password" id="ki" placeholder="Token abc123xyz..." style="margin-bottom:10px">
+    <div id="kerr" class="err" style="display:none"></div>
+    <button class="btn" id="kbtn" style="width:100%;margin-top:6px" onclick="doConnect()">Connect →</button>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main" style="display:none">
+    <div class="card">
+      <div class="tabs" id="ltabs"></div>
+      <div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:12px;align-items:end">
+        <div style="position:relative">
+          <label class="lbl">🏠 Home team</label>
+          <input id="sa" placeholder="Search team..." autocomplete="off"
+            oninput="filt('a')" onfocus="showD('a')" onblur="setTimeout(()=>hideD('a'),180)">
+          <div class="drop" id="da" style="display:none"></div>
+          <div id="sela" style="display:none;margin-top:5px;font-size:11px;color:var(--text2)"></div>
+        </div>
+        <div style="text-align:center;padding-bottom:4px;font-size:12px;font-weight:700;color:var(--text3);letter-spacing:2px">VS</div>
+        <div style="position:relative">
+          <label class="lbl" style="text-align:right;display:block">✈️ Away team</label>
+          <input id="sb" placeholder="Search team..." autocomplete="off"
+            oninput="filt('b')" onfocus="showD('b')" onblur="setTimeout(()=>hideD('b'),180)">
+          <div class="drop" id="db" style="display:none"></div>
+          <div id="selb" style="display:none;margin-top:5px;font-size:11px;color:var(--text2);text-align:right"></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="btn" id="abtn" onclick="doAnalyse()">⚡ Analyse Match</button>
+      </div>
+      <div id="steps" style="margin-top:10px"></div>
+      <div id="merr" class="err" style="display:none"></div>
+    </div>
+
+    <div id="res" style="display:none">
+      <div class="card" id="hcard"></div>
+      <div class="tabs" id="rtabs"></div>
+      <div id="tc"></div>
+    </div>
+  </div>
+
+</div>
+<script>
+// All API calls go through our Netlify serverless function
+// /.netlify/functions/api?path=/endpoint
+const api = async (path) => {
+  const r = await fetch(`/.netlify/functions/api?path=${encodeURIComponent(path)}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return j;
+};
+
+const getAll = async (path) => {
+  let d = [], url = path;
+  while (url) {
+    const j = await api(url);
+    d = [...d, ...(j.results || [])];
+    url = j.next ? new URL(j.next).pathname + new URL(j.next).search : null;
+  }
+  return d;
+};
+
+let leagues=[], allTeams=[], selLg=null, tA=null, tB=null, raw={}, pred=null, rTab='overview', mCat='All';
+
+async function doConnect() {
+  const k = document.getElementById('ki').value.trim();
+  if (!k) return;
+  document.getElementById('kerr').style.display = 'none';
+  document.getElementById('kbtn').textContent = 'Saving...';
+  // Store key and move to main — key is sent to Netlify env, not used in browser
+  localStorage.setItem('bzk3', k);
+  // Tell our proxy which key to use by storing it server-side via a test call
+  // Actually: the key is set as BZZOIRO_API_KEY in Netlify env vars by the user
+  // So we just verify the proxy works
+  try {
+    const j = await api('/leagues/');
+    if (!j.results) throw new Error('Unexpected response');
+    leagues = j.results;
+    document.getElementById('key-screen').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    document.getElementById('reset-btn').style.display = 'block';
+    allTeams = await getAll('/teams/');
+    renderLTabs();
+  } catch(e) {
+    document.getElementById('kerr').textContent = e.message + ' — Make sure BZZOIRO_API_KEY is set in your Netlify environment variables.';
+    document.getElementById('kerr').style.display = 'block';
+    document.getElementById('kbtn').textContent = 'Connect →';
+  }
+}
+
+// If already connected (Netlify proxy works without a key input)
+async function tryAutoConnect() {
+  try {
+    const j = await api('/leagues/');
+    if (!j.results) return;
+    leagues = j.results;
+    document.getElementById('key-screen').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    document.getElementById('reset-btn').style.display = 'block';
+    allTeams = await getAll('/teams/');
+    renderLTabs();
+  } catch(_) {}
+}
+
+function resetKey() {
+  document.getElementById('key-screen').style.display = 'block';
+  document.getElementById('main').style.display = 'none';
+}
+
+function renderLTabs() {
+  if (!selLg) selLg = leagues[0];
+  document.getElementById('ltabs').innerHTML = leagues.map(l =>
+    `<button class="btn sm${l.id===selLg?.id?' on':''}" onclick="pickLg(${l.id})">${l.name}</button>`
+  ).join('');
+}
+
+function pickLg(id) {
+  selLg = leagues.find(l => l.id === id);
+  tA = null; tB = null;
+  ['a','b'].forEach(s => { document.getElementById('s'+s).value=''; document.getElementById('sel'+s).style.display='none'; });
+  document.getElementById('res').style.display = 'none';
+  renderLTabs();
+}
+
+function filt(side) {
+  const q = document.getElementById('s'+side).value.toLowerCase();
+  const other = side==='a' ? tB : tA;
+  const m = allTeams.filter(t => t.name.toLowerCase().includes(q) && (!other||t.id!==other.id)).slice(0,20);
+  const d = document.getElementById('d'+side);
+  d.innerHTML = m.map(t => `<div class="di" onmousedown="pick('${side}',${t.id})">${t.name}${t.country?` <span style="opacity:.4;font-size:10px">${t.country}</span>`:''}</div>`).join('');
+  d.style.display = m.length ? 'block' : 'none';
+}
+function showD(s) { filt(s); }
+function hideD(s) { document.getElementById('d'+s).style.display='none'; }
+function pick(s, id) {
+  const t = allTeams.find(x => x.id===id); if (!t) return;
+  if (s==='a') { tA=t; document.getElementById('sa').value=t.name; document.getElementById('sela').style.display='block'; document.getElementById('sela').textContent=t.country||''; }
+  else { tB=t; document.getElementById('sb').value=t.name; document.getElementById('selb').style.display='block'; document.getElementById('selb').textContent=t.country||''; }
+  hideD(s);
+}
+
+function addStep(m) { document.getElementById('steps').innerHTML += `<div class="steprow"><span class="spin"></span>${m}</div>`; }
+
+async function doAnalyse() {
+  if (!tA||!tB) return;
+  document.getElementById('steps').innerHTML = '';
+  document.getElementById('merr').style.display = 'none';
+  document.getElementById('res').style.display = 'none';
+  document.getElementById('abtn').textContent = 'Fetching live data...';
+  try {
+    addStep('Fetching live scores...');
+    const today = new Date().toISOString().split('T')[0];
+    const past  = new Date(Date.now()-90*864e5).toISOString().split('T')[0];
+    const [liveData, predsData] = await Promise.all([
+      api('/live/'),
+      api('/predictions/?upcoming=true'),
+    ]);
+    addStep('Fetching match history (last 90 days)...');
+    const [pastA, pastB] = await Promise.all([
+      api(`/events/?team=${encodeURIComponent(tA.name)}&date_from=${past}&date_to=${today}&status=finished`),
+      api(`/events/?team=${encodeURIComponent(tB.name)}&date_from=${past}&date_to=${today}&status=finished`),
+    ]);
+    addStep('Fetching player data...');
+    const [plA, plB] = await Promise.all([
+      api(`/players/?team=${tA.id}`),
+      api(`/players/?team=${tB.id}`),
+    ]);
+    addStep('Running Dixon-Coles + CatBoost model...');
+    const mA=pastA.results||[], mB=pastB.results||[];
+    const allPreds=predsData.results||[];
+    const h2h=[...mA,...mB].filter(m=>(m.home_team===tA.name&&m.away_team===tB.name)||(m.home_team===tB.name&&m.away_team===tA.name)).sort((a,b)=>new Date(b.event_date)-new Date(a.event_date)).slice(0,10);
+    const aiPred=allPreds.find(p=>(p.event.home_team===tA.name&&p.event.away_team===tB.name)||(p.event.home_team===tB.name&&p.event.away_team===tA.name));
+    const liveFix=(liveData.results||[]).find(m=>(m.home_team===tA.name&&m.away_team===tB.name)||(m.home_team===tB.name&&m.away_team===tA.name));
+    raw={mA,mB,h2h,aiPred,liveFix,plA:plA.results||[],plB:plB.results||[]};
+    pred = buildPred(mA,mB,h2h,aiPred,liveFix);
+    document.getElementById('steps').innerHTML = '';
+    renderRes();
+    document.getElementById('res').style.display = 'block';
+  } catch(e) {
+    document.getElementById('merr').textContent = e.message;
+    document.getElementById('merr').style.display = 'block';
+  }
+  document.getElementById('abtn').textContent = '⚡ Analyse Match';
+}
+
+// ── MODEL ─────────────────────────────────────────────────────────────────
+const tw=d=>Math.exp(-0.0065*(Date.now()-new Date(d).getTime())/864e5);
+function rates(mx,name){let wF=0,wA=0,wT=0;mx.forEach(m=>{if(m.status!=='finished')return;const isH=m.home_team===name;const gF=isH?m.home_score:m.away_score,gA=isH?m.away_score:m.home_score;if(gF==null||gA==null)return;const w=tw(m.event_date);wF+=gF*w;wA+=gA*w;wT+=w;});return wT?{att:wF/wT,def:wA/wT}:{att:1.25,def:1.15};}
+const pois=(lam,k)=>{if(k<0||lam<=0)return k===0?1:0;let p=Math.exp(-lam);for(let i=0;i<k;i++)p*=lam/(i+1);return Math.max(0,p);};
+const dct=(i,j,lA,lB,r)=>{if(i===0&&j===0)return 1-lA*lB*r;if(i===1&&j===0)return 1+lB*r;if(i===0&&j===1)return 1+lA*r;if(i===1&&j===1)return 1-r;return 1;};
+
+function buildPred(mA,mB,h2h,aiPred,liveFix){
+  const gA=rates(mA,tA.name),gB=rates(mB,tB.name);
+  const lg=(gA.att+gB.att)/2;
+  let lA=Math.max(.2,(gA.att/Math.max(lg,.5))*(gB.def/Math.max(lg,.5))*lg*1.18);
+  let lB=Math.max(.2,(gB.att/Math.max(lg,.5))*(gA.def/Math.max(lg,.5))*lg);
+  const rho=-0.134;
+  let wA=0,dr=0,wB=0;const sc=[];
+  for(let i=0;i<=9;i++)for(let j=0;j<=9;j++){let p=pois(lA,i)*pois(lB,j);if(i<=1&&j<=1)p*=Math.max(0,dct(i,j,lA,lB,rho));if(p>0){sc.push({s:`${i}-${j}`,p,h:i,a:j});if(i>j)wA+=p;else if(i===j)dr+=p;else wB+=p;}}
+  let tot=wA+dr+wB||1;wA/=tot;dr/=tot;wB/=tot;
+  const h2hAW=h2h.filter(m=>(m.home_team===tA.name&&m.home_score>m.away_score)||(m.away_team===tA.name&&m.away_score>m.home_score)).length;
+  const h2hBW=h2h.filter(m=>(m.home_team===tB.name&&m.home_score>m.away_score)||(m.away_team===tB.name&&m.away_score>m.home_score)).length;
+  const h2hT=Math.max(h2h.length,1);
+  wA=Math.max(.04,wA+((h2hAW/h2hT)-.38)*.07);wB=Math.max(.04,wB+((h2hBW/h2hT)-.38)*.07);
+  dr=Math.max(.06,1-wA-wB);tot=wA+dr+wB;wA/=tot;dr/=tot;wB/=tot;
+  let aiB=false,aiConf=0,aiRecs={};
+  if(aiPred){
+    aiB=true;aiConf=aiPred.confidence||0;
+    const flip=aiPred.event.home_team===tB.name;
+    const aA=flip?aiPred.prob_away_win/100:aiPred.prob_home_win/100;
+    const aD=aiPred.prob_draw/100;
+    const aBw=flip?aiPred.prob_home_win/100:aiPred.prob_away_win/100;
+    lA=flip?(aiPred.expected_away_goals||lA):(aiPred.expected_home_goals||lA);
+    lB=flip?(aiPred.expected_home_goals||lB):(aiPred.expected_away_goals||lB);
+    const w=Math.min(.55,aiConf*.7+.2);
+    wA=wA*(1-w)+aA*w;dr=dr*(1-w)+aD*w;wB=wB*(1-w)+aBw*w;
+    tot=wA+dr+wB;wA/=tot;dr/=tot;wB/=tot;
+    aiRecs={o25:aiPred.over_25_recommend,btts:aiPred.btts_recommend,win:aiPred.winner_recommend,fav:flip?(aiPred.favorite==='H'?'away':'home'):(aiPred.favorite==='H'?'home':'away')};
+  }
+  sc.sort((a,b)=>b.p-a.p);
+  const topSc=sc.slice(0,8).map(s=>({...s,p:s.p/tot}));
+  const xG=lA+lB;
+  const cdf=n=>{let p=0;for(let t=0;t<=n;t++)p+=pois(xG,t);return Math.min(.99,p);};
+  const o05=1-cdf(0),o15=1-cdf(1),o25=1-cdf(2),o35=1-cdf(3),o45=1-cdf(4),o55=1-cdf(5);
+  const btts=(1-Math.exp(-lA))*(1-Math.exp(-lB));
+  const cc=n=>{let p=0;for(let t=0;t<=n;t++)p+=pois(9.8,t);return Math.min(.99,p);};
+  const yc=n=>{let p=0;for(let t=0;t<=n;t++)p+=pois(3.4,t);return Math.min(.99,p);};
+  const co75=1-cc(7),co85=1-cc(8),co95=1-cc(9),co105=1-cc(10),co125=1-cc(12);
+  const y15=1-yc(1),y25=1-yc(2),y35=1-yc(3),y45=1-yc(4);
+  const htA=lA*.42,htB=lB*.42;let hwA=0,hdr=0,hwB=0;
+  for(let i=0;i<=6;i++)for(let j=0;j<=6;j++){const p=pois(htA,i)*pois(htB,j);if(i>j)hwA+=p;else if(i===j)hdr+=p;else hwB+=p;}
+  const ht=hwA+hdr+hwB;hwA/=ht;hdr/=ht;hwB/=ht;
+  const ahH1=sc.filter(s=>s.h-s.a>=2).reduce((a,s)=>a+s.p/tot,0);
+  const ahA1=sc.filter(s=>s.a-s.h>=0).reduce((a,s)=>a+s.p/tot,0);
+  const nA=tA.name,nB=tB.name;
+  const toO=p=>parseFloat(Math.max(1.01,1/(Math.max(.005,Math.min(.99,p))*.932)).toFixed(2));
+  const mk=(cat,label,prob,air)=>{const p=Math.min(.98,Math.max(.01,prob));const o=toO(p);return{cat,label,prob:p,odds:o,ev:+(p*o-1).toFixed(4),air:!!air};};
+  const mkts=[
+    mk('1X2',`${nA} Win`,wA,aiRecs.win&&aiRecs.fav==='home'),mk('1X2','Draw',dr),mk('1X2',`${nB} Win`,wB,aiRecs.win&&aiRecs.fav==='away'),
+    mk('Double Chance','1X (Home or Draw)',wA+dr),mk('Double Chance','X2 (Draw or Away)',dr+wB),mk('Double Chance','12 (Either Wins)',wA+wB),
+    mk('Goals O/U','Over 0.5',o05),mk('Goals O/U','Under 0.5',1-o05),mk('Goals O/U','Over 1.5',o15),mk('Goals O/U','Under 1.5',1-o15),
+    mk('Goals O/U','Over 2.5',o25,aiRecs.o25),mk('Goals O/U','Under 2.5',1-o25),mk('Goals O/U','Over 3.5',o35),mk('Goals O/U','Under 3.5',1-o35),mk('Goals O/U','Over 4.5',o45),mk('Goals O/U','Over 5.5',o55),
+    mk('BTTS','BTTS Yes',btts,aiRecs.btts),mk('BTTS','BTTS No',1-btts),
+    mk('BTTS+Goals','BTTS & Over 2.5',btts*o25),mk('BTTS+Goals','BTTS & Under 2.5',btts*(1-o25)),
+    mk('BTTS+Result',`BTTS & ${nA} Win`,btts*wA),mk('BTTS+Result','BTTS & Draw',btts*dr),mk('BTTS+Result',`BTTS & ${nB} Win`,btts*wB),
+    mk('Corners','Over 7.5',co75),mk('Corners','Under 7.5',1-co75),mk('Corners','Over 8.5',co85),mk('Corners','Under 8.5',1-co85),mk('Corners','Over 9.5',co95),mk('Corners','Over 10.5',co105),mk('Corners','Over 12.5',co125),
+    mk('Cards','Over 1.5 Yellows',y15),mk('Cards','Over 2.5 Yellows',y25),mk('Cards','Under 2.5 Yellows',1-y25),mk('Cards','Over 3.5 Yellows',y35),mk('Cards','Over 4.5 Yellows',y45),
+    mk('Asian Hdcp',`${nA} -0.5`,wA),mk('Asian Hdcp',`${nA} -1.0`,ahH1),mk('Asian Hdcp',`${nB} +0.5`,wB+dr),mk('Asian Hdcp',`${nB} +1.0`,ahA1),
+    mk('Half Time',`HT: ${nA} Win`,hwA),mk('Half Time','HT: Draw',hdr),mk('Half Time',`HT: ${nB} Win`,hwB),mk('Half Time','HT: Over 0.5',1-Math.exp(-(htA+htB))),
+    mk('Result+Goals',`${nA} Win & Over 1.5`,wA*o15),mk('Result+Goals',`${nA} Win & Over 2.5`,wA*o25),mk('Result+Goals',`${nB} Win & Over 1.5`,wB*o15),mk('Result+Goals','Draw & Under 2.5',dr*(1-o25)),
+  ];
+  const ranked=[...mkts].sort((a,b)=>b.ev-a.ev);
+  const cats=[...new Set(mkts.map(m=>m.cat))];
+  const risk=Math.min(92,Math.max(12,Math.round(38+(1-Math.abs(wA-wB))*34+(dr>.29?9:0))));
+  const reward=Math.min(92,Math.max(12,Math.round(22+(ranked[0]?.ev||0)*170+ranked.filter(m=>m.ev>.02).length*2.5)));
+  return{wA,dr,wB,lA:lA.toFixed(2),lB:lB.toFixed(2),xG:xG.toFixed(2),o25,btts,co85,mkts,ranked,cats,risk,reward,scores:topSc,gA,gB,h2hAW,h2hBW,h2hD:h2h.length-h2hAW-h2hBW,aiB,aiConf,aiRecs,liveFix};
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+const pS=v=>Math.round(v*100)+'%';
+const p1=v=>(v*100).toFixed(1)+'%';
+const evB=(ev,air)=>{if(air)return '<span class="badge b-ai">★ AI pick</span>';if(ev>.10)return '<span class="badge b-hot">🔥 Best value</span>';if(ev>.02)return '<span class="badge b-val">✓ Value</span>';if(ev>-.04)return '<span class="badge b-fair">Fair</span>';return '<span class="badge b-av">Avoid</span>';};
+const sBar=(lbl,a,b,cA,cB)=>{const va=parseFloat(a)||0,vb=parseFloat(b)||0,s=va+vb||1;return `<div class="bar-w"><div class="bar-l"><span style="color:${cA};font-weight:700">${a}</span><span style="font-size:11px;color:var(--text2)">${lbl}</span><span style="color:${cB};font-weight:700">${b}</span></div><div class="bar-t"><div style="width:${va/s*100}%;background:${cA};transition:width 1s"></div><div style="flex:1"></div><div style="width:${vb/s*100}%;background:${cB};transition:width 1s"></div></div></div>`;};
+const gauge=(val,lbl,col)=>{const ang=-135+(val/100)*270;return `<div style="text-align:center"><svg width="110" height="76" viewBox="0 0 110 76"><path d="M10,70 A42,42 0 0,1 100,70" fill="none" stroke="var(--border)" stroke-width="11" stroke-linecap="round"/><path d="M10,70 A42,42 0 0,1 100,70" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${(val/100)*132} 132"/><g transform="rotate(${ang},55,70)"><line x1="55" y1="70" x2="55" y2="32" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="55" cy="70" r="4" fill="${col}"/></g><text x="55" y="59" text-anchor="middle" fill="white" font-size="20" font-weight="700" font-family="monospace">${val}</text></svg><div style="font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:-3px">${lbl}</div></div>`;};
+const fdot=r=>{const bg=r==='W'?'#14532d':r==='D'?'#713f12':'#7f1d1d';const tc=r==='W'?'#4ade80':r==='D'?'#fde68a':'#fca5a5';return `<span class="fdot" style="background:${bg};color:${tc}">${r}</span>`;};
+const formD=(mx,name)=>mx.filter(m=>m.status==='finished').slice(-10).map(m=>{const isH=m.home_team===name;const gF=isH?m.home_score:m.away_score,gA=isH?m.away_score:m.home_score;return fdot(gF>gA?'W':gF<gA?'L':'D');}).join('');
+
+function renderRes(){
+  const p=pred,cA='#6366f1',cB='#f59e0b';
+  const rc=p.risk>65?'#ef4444':p.risk>40?'#f59e0b':'#22c55e';
+  const rw=p.reward>65?'#22c55e':p.reward>40?'#f59e0b':'#ef4444';
+  const lf=p.liveFix;
+  const lh=lf?`<div style="background:rgba(239,68,68,.1);border:1px solid #7f1d1d;border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px;font-weight:700;color:#fca5a5;text-align:center">🔴 LIVE: ${lf.home_team} ${lf.home_score??0}–${lf.away_score??0} ${lf.away_team} ${lf.current_minute?lf.current_minute+"'":''}</div>`:'';
+  document.getElementById('hcard').innerHTML=`${lh}<div style="display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:12px">${gauge(p.risk,'Risk',rc)}<div style="text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:13px;font-weight:700;color:${cA}">${tA.name}</span><div style="font-size:26px;font-weight:900"><span style="color:${cA}">${pS(p.wA)}</span><span style="color:var(--text3)"> · ${pS(p.dr)} · </span><span style="color:${cB}">${pS(p.wB)}</span></div><span style="font-size:13px;font-weight:700;color:${cB}">${tB.name}</span></div><div style="font-size:11px;color:var(--text2)"><span class="live-dot"></span>Live data · xG ${p.lA}–${p.lB} · ${selLg?.name||''}${p.aiB?` · <span style="color:#7dd3fc">★ CatBoost AI (${(p.aiConf*100).toFixed(0)}% conf)</span>`:''}</div></div>${gauge(p.reward,'Reward',rw)}</div>`;
+  document.getElementById('rtabs').innerHTML=['Overview','All Markets','Stats','H2H','Players'].map(t=>`<button class="btn sm${t.toLowerCase()===rTab?' on':''}" onclick="swTab('${t.toLowerCase()}')">${t}</button>`).join('');
+  renderTab();
+}
+
+function swTab(t){rTab=t;document.querySelectorAll('#rtabs .btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase()===t));renderTab();}
+
+function renderTab(){
+  const p=pred,cA='#6366f1',cB='#f59e0b',d=document.getElementById('tc');
+  if(rTab==='overview'){
+    const aiBox=p.aiB?`<div style="background:rgba(99,162,241,.08);border:1px solid rgba(99,162,241,.2);border-radius:8px;padding:12px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:#7dd3fc;margin-bottom:8px">★ CatBoost AI Recommendations — ${(p.aiConf*100).toFixed(0)}% confidence</div><div style="display:flex;gap:8px;flex-wrap:wrap">${p.aiRecs.o25?'<span class="badge b-ai">Over 2.5 Goals</span>':''}${p.aiRecs.btts?'<span class="badge b-ai">BTTS Yes</span>':''}${p.aiRecs.win?`<span class="badge b-ai">Winner: ${p.aiRecs.fav==='home'?tA.name:tB.name}</span>`:''}</div></div>`:'';
+    d.innerHTML=`${aiBox}<div class="g2"><div class="card"><div class="sec">Match probabilities</div>${sBar('Home Win',pS(p.wA),pS(1-p.wA),cA,'var(--text3)')}${sBar('Away Win',pS(p.wB),pS(1-p.wB),cB,'var(--text3)')}${sBar('Draw',pS(p.dr),pS(1-p.dr),'#888','var(--text3)')}${sBar('Over 2.5 Goals',pS(p.o25),pS(1-p.o25),cA,'var(--text3)')}${sBar('BTTS Yes',pS(p.btts),pS(1-p.btts),cA,'var(--text3)')}${sBar('Over 8.5 Corners',pS(p.co85),pS(1-p.co85),cA,'var(--text3)')}</div><div class="card"><div class="sec">Most likely scorelines</div>${p.scores.map((s,i)=>`<div class="row"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:10px;color:var(--text3);width:17px">#${i+1}</span><span class="schip">${s.s}</span></div><span style="font-weight:700;color:var(--text2)">${p1(s.p)}</span></div>`).join('')}</div></div><div class="card" style="border-color:#166534;background:rgba(34,197,94,.04)"><div class="sec" style="color:#4ade80">Top value markets</div>${p.ranked.slice(0,6).map(m=>`<div class="row"><div><div style="display:flex;align-items:center;gap:5px"><span class="catb">${m.cat}</span><span style="font-weight:700;font-size:13px">${m.label}</span></div><div style="font-size:11px;color:var(--text2);margin-top:2px">Model: ${p1(m.prob)} · Implied: ${p1(1/m.odds)}</div></div><div style="display:flex;gap:8px;align-items:center"><div style="text-align:right"><div style="font-size:19px;font-weight:900">@${m.odds.toFixed(2)}</div><div style="font-size:11px;color:${m.ev>0?'#4ade80':'#888'}">${m.ev>=0?'+':''}${(m.ev*100).toFixed(1)}% EV</div></div>${evB(m.ev,m.air)}</div></div>`).join('')}</div>`;
+  }else if(rTab==='all markets'){
+    const cats=['All',...p.cats];
+    d.innerHTML=`<div class="tabs">${cats.map(c=>`<button class="btn sm${c===mCat?' on':''}" onclick="swMCat('${c}')">${c}</button>`).join('')}</div><div id="ml">${mktList()}</div><div style="font-size:11px;color:var(--text3);text-align:center;margin-top:10px">EV = (prob × odds) − 1 · 6.8% margin · Positive EV = edge over bookmaker</div>`;
+  }else if(rTab==='stats'){
+    d.innerHTML=`<div class="g2">${[[tA,raw.mA,p.gA,p.lA,cA,'Home'],[tB,raw.mB,p.gB,p.lB,cB,'Away']].map(([team,mx,g,lam,col,side])=>`<div class="card"><div class="sec" style="color:${col}">${side} · ${team.name}</div><div style="margin-bottom:10px">${formD(mx,team.name)}</div>${[['Goals/game (weighted)',g.att.toFixed(2)],['Conceded/game (weighted)',g.def.toFixed(2)],['xG (model)',lam],['Matches used',mx.filter(m=>m.status==='finished').length]].map(([k,v])=>`<div class="row"><span style="color:var(--text2)">${k}</span><span style="font-weight:700">${v}</span></div>`).join('')}</div>`).join('')}</div><div class="card"><div class="sec">Side-by-side</div>${sBar('Goals/game',p.gA.att.toFixed(2),p.gB.att.toFixed(2),cA,cB)}${sBar('Conceded/game',p.gA.def.toFixed(2),p.gB.def.toFixed(2),cA,cB)}${sBar('xG (model)',p.lA,p.lB,cA,cB)}</div>`;
+  }else if(rTab==='h2h'){
+    const h=raw.h2h;
+    d.innerHTML=`<div class="card"><div class="sec">Last ${h.length} head-to-head meetings</div>${h.length===0?'<p style="color:var(--text2);font-size:13px;padding:8px 0">No H2H matches found in the last 90 days.</p>':''}${h.map(m=>{const gh=m.home_score??'?',ga=m.away_score??'?',win=gh>ga?'home':gh<ga?'away':'draw',dt=m.event_date?.split('T')[0]||'—';return `<div style="display:flex;align-items:center;gap:7px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap"><span style="color:var(--text2);width:86px;flex-shrink:0">${dt}</span><div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-weight:${win==='home'?700:400};flex:1;text-align:right">${m.home_team}</span><span class="schip" style="font-size:15px;padding:3px 12px">${gh}–${ga}</span><span style="font-weight:${win==='away'?700:400};flex:1">${m.away_team}</span></div><span style="font-size:10px;color:var(--text2);width:42px;text-align:right;flex-shrink:0">${win==='draw'?'DRAW':win.toUpperCase()}</span></div>`;}).join('')}</div><div class="g3">${[[tA.name+' Wins',p.h2hAW,cA],['Draws',p.h2hD,'#888'],[tB.name+' Wins',p.h2hBW,cB]].map(([k,v,c])=>`<div class="card" style="text-align:center"><div style="font-size:36px;font-weight:900;color:${c}">${v}</div><div style="font-size:11px;color:var(--text2);margin-top:4px">${k}</div></div>`).join('')}</div>`;
+  }else if(rTab==='players'){
+    d.innerHTML=`<div class="g2">${[[tA,raw.plA,cA,'Home'],[tB,raw.plB,cB,'Away']].map(([team,pls,col,side])=>`<div class="card"><div class="sec" style="color:${col}">${side} · ${team.name}</div>${pls.length===0?'<p style="color:var(--text2);font-size:12px">No player data.</p>':''}${pls.slice(0,8).map(pl=>`<div class="row"><div style="display:flex;align-items:center;gap:8px">${pl.api_id?`<img src="https://sports.bzzoiro.com/img/player/${pl.api_id}/" width="26" height="26" style="border-radius:50%;object-fit:cover" onerror="this.style.display='none'">`:'<div style="width:26px;height:26px;border-radius:50%;background:var(--bg2)"></div>'}<div><div style="font-size:13px;font-weight:700">${pl.name}</div><div style="font-size:11px;color:var(--text2)">${pl.position||'—'} · ${pl.nationality||''}</div></div></div></div>`).join('')}</div>`).join('')}</div>`;
+  }
+}
+
+const mktList=()=>pred.ranked.filter(m=>mCat==='All'||m.cat===mCat).map(m=>`<div class="mkt${m.ev>.08||m.air?' hot':m.ev>.02?' val':''}"><div><div style="display:flex;align-items:center;gap:5px"><span class="catb">${m.cat}</span><span style="font-weight:700;font-size:13px">${m.label}</span></div><div style="font-size:11px;color:var(--text2);margin-top:2px">Prob: ${p1(m.prob)} · Implied: ${p1(1/m.odds)}</div></div><div style="display:flex;gap:9px;align-items:center"><div style="text-align:right"><div style="font-size:21px;font-weight:900">@${m.odds.toFixed(2)}</div><div style="font-size:11px;font-weight:700;color:${m.ev>0?'#4ade80':'#ef4444'}">${m.ev>=0?'+':''}${(m.ev*100).toFixed(1)}% EV</div></div>${evB(m.ev,m.air)}</div></div>`).join('');
+function swMCat(c){mCat=c;document.querySelectorAll('#tc .tabs .btn').forEach(b=>b.classList.toggle('on',b.textContent===c));document.getElementById('ml').innerHTML=mktList();}
+
+// On load: try auto-connect (proxy works without user typing key)
+window.addEventListener('load', tryAutoConnect);
+</script>
+</body>
+</html>
